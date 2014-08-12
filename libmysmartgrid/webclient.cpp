@@ -23,11 +23,52 @@
 #include "error.h"
 #include <curl/curl.h>
 #include <sstream>
+#include <iomanip>
+#include <openssl/hmac.h>
+#include <cstring>
 
 using namespace libmsg;
 
+Webclient::Webclient() {}
+Webclient::~Webclient() {}
+
+const std::string Webclient::digest_message(const std::string& data, const std::string& key) {
+
+    HMAC_CTX context;
+    HMAC_CTX_init(&context);
+    HMAC_Init_ex(&context, key.c_str(), key.length(), EVP_sha1(), NULL);
+    HMAC_Update(&context, (const unsigned char*) data.c_str(), data.length());
+
+    unsigned char out[EVP_MAX_MD_SIZE];
+    unsigned int len = EVP_MAX_MD_SIZE;
+
+    HMAC_Final(&context, out, &len);
+    char ret[2 * len];
+		memset(ret, 0, 2*len);
+
+    std::stringstream oss;
+		oss << std::hex;
+    for (size_t i = 0; i < len; i++) {
+        char s[4];
+        snprintf(s, 3, "%02x:", out[i]);
+        strncat(ret, s, 2 * len);
+				oss << std::setw(2) << std::setfill('0') << (unsigned int) out[i];
+    }
+		oss << std::dec;
+		std::cout << "blubb: " << oss.str();
+
+    HMAC_CTX_cleanup(&context);
+
+    char digest[255];
+    memset(digest, 0, sizeof (digest));
+    snprintf(digest, 255, "%s", ret);
+		std::cout << "blubb2: " << digest;
+    return std::string(digest);
+		//return oss.str().substr(0, 255);
+}
+
 /* Store curl responses in memory. Curl needs a custom callback for that. Otherwise it tries to write the response to a file. */
-static size_t curlWriteCustomCallback(char *ptr, size_t size, size_t nmemb, void *data) {
+size_t Webclient::curlWriteCustomCallback(char *ptr, size_t size, size_t nmemb, void *data) {
 
     size_t realsize = size * nmemb;
 		std::string *response = static_cast<std::string *> (data);;
@@ -37,13 +78,23 @@ static size_t curlWriteCustomCallback(char *ptr, size_t size, size_t nmemb, void
     return realsize;
 }
 
-boost::shared_ptr<Json::Value> Webclient::performHttpRequest(const std::string& method, const std::string& url, const boost::shared_ptr<Json::Value>& body)
+boost::shared_ptr<Json::Value> Webclient::performHttpRequest(const std::string& method, const std::string& url, const std::string& token) const
+{
+	return performHttpRequest(method, url, token, "", boost::shared_ptr<Json::Value>(new Json::Value()));
+}
+
+boost::shared_ptr<Json::Value> Webclient::performHttpRequest(const std::string& method, const std::string& url, const std::string& key, const boost::shared_ptr<Json::Value>& body) const
+{
+	return performHttpRequest(method, url, "", key, body);
+}
+
+boost::shared_ptr<Json::Value> Webclient::performHttpRequest(const std::string& method, const std::string& url, const std::string& token, const std::string& key, const boost::shared_ptr<Json::Value>& body) const
 {
     long int httpCode = 0;
     CURLcode curlCode;
     std::string response = "";
     CURL *curl = nullptr;
-    Json::Value *jsonValue = nullptr;
+    Json::Value *jsonValue = new Json::Value();
     curl_slist *headers = nullptr;
 
     try {
@@ -68,27 +119,27 @@ boost::shared_ptr<Json::Value> Webclient::performHttpRequest(const std::string& 
         //Required if next router has an ip-change.
         curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
 
-        headers = curl_slist_append(headers, "User-Agent: libklio");
+        headers = curl_slist_append(headers, "User-Agent: libmysmartgrid");
         headers = curl_slist_append(headers, "X-Version: 1.0");
         headers = curl_slist_append(headers, "Accept: application/json,text/html");
 
 				Json::FastWriter w;
-        const std::string body = w.write(body);
+        const std::string strbody = w.write(*body);
         std::ostringstream oss;
-        /*if (!key.empty())
-            oss << "X-Digest: " << digest_message(body, key);
+        if (!key.empty())
+            oss << "X-Digest: " << digest_message(strbody, key);
         if (!token.empty())
             oss << "X-Token: " << token;
-        headers = curl_slist_append(headers, oss.str().c_str());*/
+        headers = curl_slist_append(headers, oss.str().c_str());
 
         if (method == "POST") {
             headers = curl_slist_append(headers, "Content-type: application/json");
 
             oss.str(std::string());
-            oss << "Content-Length: " << body.length();
+            oss << "Content-Length: " << strbody.length();
             headers = curl_slist_append(headers, oss.str().c_str());
 
-            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body.c_str());
+            curl_easy_setopt(curl, CURLOPT_POSTFIELDS, strbody.c_str());
         }
 
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
@@ -101,9 +152,10 @@ boost::shared_ptr<Json::Value> Webclient::performHttpRequest(const std::string& 
 
 						bool ok;
 						Json::Reader r;
+						std::cout << response;
 						ok = r.parse(response, *jsonValue, false);
 						if (!ok) {
-							throw GenericException("derp");
+							throw GenericException("derp"); //TODO: derp
 						}
 
             //Clean up

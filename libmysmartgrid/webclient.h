@@ -23,7 +23,7 @@
 #define LIBMSG_WEBCLIENT_HPP 1
 
 #include <boost/smart_ptr.hpp>
-#include <json/json.h>
+#include <jsoncpp/json/json.h>
 
 namespace libmsg {
 	//typedef boost::shared_ptr<Json::Value> Json::Value::Ptr;
@@ -32,7 +32,14 @@ namespace libmsg {
 			Webclient();
 			~Webclient();
 
-			boost::shared_ptr<Json::Value> performHttpRequest(const std::string& method, const std::string& url, const boost::shared_ptr<Json::Value>& body);
+			boost::shared_ptr<Json::Value> performHttpRequest(const std::string& method, const std::string& url, const std::string& token) const;
+			boost::shared_ptr<Json::Value> performHttpRequest(const std::string& method, const std::string& url, const std::string& key, const boost::shared_ptr<Json::Value>& body) const;
+
+		protected:
+			boost::shared_ptr<Json::Value> performHttpRequest(const std::string& method, const std::string& url, const std::string& token, const std::string& key, const boost::shared_ptr<Json::Value>& body) const;
+
+			static const std::string digest_message(const std::string& data, const std::string& key);
+			static size_t curlWriteCustomCallback(char *ptr, size_t size, size_t nmemb, void *data);
 	};
 }
 
