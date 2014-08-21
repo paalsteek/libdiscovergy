@@ -109,6 +109,9 @@ endif( NOT JSONCPP_FOUND)
 
 include_directories(${CMAKE_BINARY_DIR})
 
+# this file is installed and contains all necessary information about the installed libmysmartgrid,
+# it also loads the file with the exported targets
+configure_file(${PROJECT_NAME}Config.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" @ONLY)
 # Check for some compiler stuff
 include(CMakeBackwardCompatibilityCXX)
 
