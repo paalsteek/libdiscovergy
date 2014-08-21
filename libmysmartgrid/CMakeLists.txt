@@ -16,7 +16,6 @@ ADD_LIBRARY(mysmartgrid SHARED ${msg_src}
   )
 
 target_link_libraries(mysmartgrid
-  ${SQLITE3_LIBRARIES}
   ${Boost_LIBRARIES}
   ${CURL_LIBRARIES}
   ${JSONCPP_LIBRARY}

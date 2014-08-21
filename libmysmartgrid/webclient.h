@@ -26,17 +26,21 @@
 #include <jsoncpp/json/json.h>
 
 namespace libmsg {
-	//typedef boost::shared_ptr<Json::Value> Json::Value::Ptr;
+	typedef boost::shared_ptr<Json::Value> JsonPtr;
 	class Webclient {
 		public:
 			Webclient();
 			~Webclient();
 
-			boost::shared_ptr<Json::Value> performHttpRequest(const std::string& method, const std::string& url, const std::string& token) const;
-			boost::shared_ptr<Json::Value> performHttpRequest(const std::string& method, const std::string& url, const std::string& key, const boost::shared_ptr<Json::Value>& body) const;
+			static JsonPtr performHttpRequest(const std::string& method, const std::string& url, const std::string& token);
+			static JsonPtr performHttpRequest(const std::string& method, const std::string& url, const std::string& key, const boost::shared_ptr<Json::Value>& body);
+			static JsonPtr performHttpGetToken(const std::string& url, const std::string& token);
+			static JsonPtr performHttpGet(const std::string& url, const std::string& key);
+			static JsonPtr performHttpPost(const std::string& url, const std::string& key, const JsonPtr& body);
+			static JsonPtr performHttpDelete(const std::string& url, const std::string& key);
 
 		protected:
-			boost::shared_ptr<Json::Value> performHttpRequest(const std::string& method, const std::string& url, const std::string& token, const std::string& key, const boost::shared_ptr<Json::Value>& body) const;
+			static JsonPtr performHttpRequest(const std::string& method, const std::string& url, const std::string& token, const std::string& key, const JsonPtr& body);
 
 			static const std::string digest_message(const std::string& data, const std::string& key);
 			static size_t curlWriteCustomCallback(char *ptr, size_t size, size_t nmemb, void *data);

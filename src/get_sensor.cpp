@@ -25,7 +25,8 @@
 int main(int argc, char* argv[]) {
 	std::cout << "blubb" << std::endl;
 	libmsg::Webclient w;
-	boost::shared_ptr<Json::Value> v = w.performHttpRequest("GET", "https://dev3-api.mysmartgrid.de:8443/sensor/0d53f4b15ce1dfb0932e47c5f1751279?unit=watt&interval=hour", "5a3e2d515e43a4662fadf7f15564da6b");
+	//boost::shared_ptr<Json::Value> v = w.performHttpGetToken("https://dev3-api.mysmartgrid.de:8443/sensor/0d53f4b15ce1dfb0932e47c5f1751279?unit=watt&interval=hour", "5a3e2d515e43a4662fadf7f15564da6b");
+	boost::shared_ptr<Json::Value> v = w.performHttpGet("https://dev3-api.mysmartgrid.de:8443/sensor/0d53f4b15ce1dfb0932e47c5f1751279?unit=watt&interval=hour", "644bc984759564991ccabe7f9fcb801a");
 	std::cout << "Result: " << *v << std::endl;
 	for ( auto it = v->begin(); it != v->end(); it++ ) {
 		std::cout << (*it)[0] << ": " << (*it)[1] << std::endl;

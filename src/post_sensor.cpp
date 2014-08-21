@@ -21,12 +21,18 @@
 
 #include <iostream>
 #include <libmysmartgrid/webclient.h>
+#include <libmysmartgrid/error.h>
 
 int main(int argc, char* argv[]) {
-	libmsg::Webclient w;
-	boost::shared_ptr<Json::Value> v = w.performHttpRequest("GET", "https://dev3-api.mysmartgrid.de:8443/sensor/0d53f4b15ce1dfb0932e47c5f1751279?unit=watt&interval=hour", "644bc984759564991ccabe7f9fcb801a", boost::shared_ptr<Json::Value>(new Json::Value()));
-	std::cout << "Result: " << *v << std::endl;
-	for ( auto it = v->begin(); it != v->end(); it++ ) {
-		std::cout << (*it)[0] << ": " << (*it)[1] << std::endl;
+	Json::Value *value = new Json::Value(Json::objectValue);
+	(*value)["key"] = "644bc984759564991ccabe7f9fcb801a";
+	(*value)["uptime"] = 0;
+	(*value)["version"] = 0;
+
+	try {
+		boost::shared_ptr<Json::Value> v = libmsg::Webclient::performHttpRequest("POST", "https://dev3-api.mysmartgrid.de:8443/device/ae44fe656e58a43284995e5db583b378", "644bc984759564991ccabe7f9fcb801a", boost::shared_ptr<Json::Value>(value));
+		std::cout << "Result: " << *v << std::endl;
+	} catch ( const libmsg::GenericException& e ) {
+		std::cout << "Error during request: " << e.what();
 	}
 }
