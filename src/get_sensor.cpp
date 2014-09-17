@@ -23,12 +23,19 @@
 #include <libmysmartgrid/webclient.h>
 
 int main(int argc, char* argv[]) {
-	std::cout << "blubb" << std::endl;
 	libmsg::Webclient w;
-	//boost::shared_ptr<Json::Value> v = w.performHttpGetToken("https://dev3-api.mysmartgrid.de:8443/sensor/0d53f4b15ce1dfb0932e47c5f1751279?unit=watt&interval=hour", "5a3e2d515e43a4662fadf7f15564da6b");
-	boost::shared_ptr<Json::Value> v = w.performHttpGet("https://dev3-api.mysmartgrid.de:8443/sensor/0d53f4b15ce1dfb0932e47c5f1751279?unit=watt&interval=hour", "644bc984759564991ccabe7f9fcb801a");
-	std::cout << "Result: " << *v << std::endl;
-	for ( auto it = v->begin(); it != v->end(); it++ ) {
-		std::cout << (*it)[0] << ": " << (*it)[1] << std::endl;
+	{
+		try {
+			boost::shared_ptr<Json::Value> v = w.performHttpGet("https://dev3-api.mysmartgrid.de:8443/sensor/0d53f4b15ce1dfb0932e47c5f1751279?unit=watt&interval=hour", "8793a87821ef852ac3d31033a7cea385");
+		} catch (const std::exception &e) {
+			std::cout << "performHttpGet failed: " << e.what() << std::endl;
+		}
+	}
+	{
+		try {
+			boost::shared_ptr<Json::Value> v = w.performHttpGetToken("https://api.mysmartgrid.de:8443/sensor/5715a57b0c8ec958727ab3bb206d8b6e?unit=watt&interval=hour", "d3a16238d92456bb0f6727743275dce0");
+		} catch (const std::exception &e) {
+			std::cout << "performHttpGetToken failed: " << e.what() << std::endl;
+		}
 	}
 }

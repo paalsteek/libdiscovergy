@@ -20,45 +20,16 @@
  */
 
 #include "webclient.h"
-#include "error.h"
+#include "libmysmartgrid/error.h"
 #include <curl/curl.h>
 #include <sstream>
 #include <iomanip>
 #include <openssl/hmac.h>
-#include <cstring>
 
 using namespace libmsg;
 
 Webclient::Webclient() {}
 Webclient::~Webclient() {}
-
-const std::string digest_message_old(const std::string& data, const std::string& key) {
-
-    HMAC_CTX context;
-    HMAC_CTX_init(&context);
-    HMAC_Init_ex(&context, key.c_str(), key.length(), EVP_sha1(), NULL);
-    HMAC_Update(&context, (const unsigned char*) data.c_str(), data.length());
-
-    unsigned char out[EVP_MAX_MD_SIZE];
-    unsigned int len = EVP_MAX_MD_SIZE;
-
-    HMAC_Final(&context, out, &len);
-    char ret[2 * EVP_MAX_MD_SIZE];
-    memset(ret, 0, sizeof (ret));
-
-    for (size_t i = 0; i < len; i++) {
-        char s[4];
-        snprintf(s, 3, "%02x:", out[i]);
-        strncat(ret, s, 2 * len);
-    }
-
-    HMAC_CTX_cleanup(&context);
-
-    char digest[255];
-    memset(digest, 0, sizeof (digest));
-    snprintf(digest, 255, "%s", ret);
-    return std::string(digest);
-}
 
 const std::string Webclient::digest_message(const std::string& data, const std::string& key)
 {
@@ -128,7 +99,9 @@ JsonPtr Webclient::performHttpRequest(const std::string& method, const std::stri
 		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
 		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
 		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, method.c_str());
-		curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
+
+		//Activate this line to print requests and responses to the console
+		//curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
 
 		//Signal-handling is NOT thread-safe.
 		curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
@@ -140,12 +113,14 @@ JsonPtr Webclient::performHttpRequest(const std::string& method, const std::stri
 		headers = curl_slist_append(headers, "X-Version: 1.0");
 		headers = curl_slist_append(headers, "Accept: application/json,text/html");
 
-		Json::FastWriter w;
-		const std::string strbody = w.write(*body);
+		std::string strbody;
+		if (!body->isNull()) {
+			Json::FastWriter w;
+			strbody = w.write(*body);
+		}
 		std::ostringstream oss;
 		if (!key.empty()) {
 			oss << "X-Digest: " << digest_message(strbody, key);
-			std::cout << "new: " << digest_message(strbody, key) << ", old: " << digest_message_old(strbody, key) << std::endl;
 		}
 		if (!token.empty())
 			oss << "X-Token: " << token;
@@ -171,7 +146,6 @@ JsonPtr Webclient::performHttpRequest(const std::string& method, const std::stri
 
 			bool ok;
 			Json::Reader r;
-			std::cout << response;
 			ok = r.parse(response, *jsonValue, false);
 			if (!ok) {
 				throw GenericException("Error parsing response: " + response);
@@ -191,14 +165,12 @@ JsonPtr Webclient::performHttpRequest(const std::string& method, const std::stri
 				" HTTPS code: " << httpCode;
 
 			if (httpCode >= 400 && httpCode <= 499) {
-				//throw DataFormatException(oss.str());
-				throw GenericException(oss.str());
+				throw DataFormatException(oss.str());
 
 			} else if (httpCode >= 500 || httpCode == 0) {
 				throw CommunicationException(oss.str());
 
 			} else {
-				//throw StoreException(oss.str());
 				throw GenericException(oss.str());
 			}
 		}

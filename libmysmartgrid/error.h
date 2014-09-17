@@ -62,41 +62,29 @@ namespace libmsg {
 			};
 	};
 
-	/*class DataFormatException : public GenericException {
+	class DataFormatException : public GenericException {
 		public:
-		typedef boost::shared_ptr<DataFormatException> Ptr;
+			typedef boost::shared_ptr<DataFormatException> Ptr;
 
-		DataFormatException(const std::string reason) :
-		GenericException(reason) {
-		};
+			DataFormatException(const std::string reason) :
+				GenericException(reason) {
+				};
 
-		virtual ~DataFormatException() throw () {
-		};
-		};
+			virtual ~DataFormatException() throw () {
+			};
+	};
 
-		class StoreException : public GenericException {
+	class EnvironmentException : public GenericException {
 		public:
-		typedef boost::shared_ptr<StoreException> Ptr;
+			typedef boost::shared_ptr<EnvironmentException> Ptr;
 
-		StoreException(const std::string reason) :
-		GenericException(reason) {
-		};
+			EnvironmentException(const std::string reason) :
+				GenericException(reason) {
+				};
 
-		virtual ~StoreException() throw () {
-		};
-		};*/
-
-		class EnvironmentException : public GenericException {
-		public:
-		typedef boost::shared_ptr<EnvironmentException> Ptr;
-
-		EnvironmentException(const std::string reason) :
-		GenericException(reason) {
-		};
-
-		virtual ~EnvironmentException() throw () {
-		};
-		};
+			virtual ~EnvironmentException() throw () {
+			};
+	};
 
 	class MemoryException : public EnvironmentException {
 		public:
