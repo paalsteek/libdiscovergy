@@ -17,25 +17,25 @@ Libmysmartgrid depends on the following libraries:
 
 On Ubuntu 12.04 LTS you can run the following command to install all dependencies
 
-  sudo apt-get install libjsoncpp-dev libcurl4-openssl-dev libboost1.48-dev
+    sudo apt-get install libjsoncpp-dev libcurl4-openssl-dev libboost1.48-dev
 
 To build the code run the following lines from the source directory
 
-  mkdir -p build
-  cd build
-  cmake ../
-  make
+    mkdir -p build
+    cd build
+    cmake ../
+    make
 
 To install the libmysmartgrid to /usr/local run
 
-  make install
+    make install
 
 You can also change the install prefix by running
 
-  cmake -DCMAKE_INSTALL_PREFIX=<prefix> ../
+    cmake -DCMAKE_INSTALL_PREFIX=<prefix> ../
 
 in a clean build directory.
 
 If you prefer debian packages or tarballs run
 
-  make release
+    make release
