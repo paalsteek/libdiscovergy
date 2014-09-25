@@ -167,7 +167,7 @@ JsonPtr Webclient::performHttpRequest(const std::string& method, const std::stri
 			if (httpCode >= 400 && httpCode <= 499) {
 				throw DataFormatException(oss.str());
 
-			} else if (httpCode >= 500 || httpCode == 0) {
+			} else if (httpCode >= 500 || httpCode == 0 || httpCode == 200) {
 				throw CommunicationException(oss.str());
 
 			} else {
@@ -209,4 +209,33 @@ JsonPtr Webclient::performHttpPost(const std::string& url, const std::string& ke
 JsonPtr Webclient::performHttpDelete(const std::string& url, const std::string& key)
 {
 	return performHttpRequest("DELETE", url, key, JsonPtr(new Json::Value()));
+}
+
+const std::string Webclient::composeDeviceUrl(const std::string& url, const std::string& id)
+{
+	return composeUrl(url, std::string("device"), id);
+}
+
+const std::string Webclient::composeSensorUrl(const std::string& url, const std::string& sensorId, const ParamList& params)
+{
+	std::stringstream oss;
+	const char* seperator = "";
+
+	for (auto it = params.begin(), end = params.end(); it != end; ++it)
+	{
+		oss << seperator << it->first << "=" << it->second;
+		seperator = "&";
+	}
+
+	return composeUrl(url, std::string("sensor"), sensorId, oss.str());
+}
+
+const std::string Webclient::composeUrl(const std::string& url, const std::string& object, const std::string& id, const std::string& query)
+{
+	std::ostringstream oss;
+	oss << url << "/" << object << "/" << id;
+	if (!query.empty())
+		oss << "?" << query;
+
+	return oss.str();
 }

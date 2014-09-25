@@ -30,7 +30,8 @@ int main(int argc, char* argv[]) {
 	(*value)["version"] = 0;
 
 	try {
-		boost::shared_ptr<Json::Value> v = libmsg::Webclient::performHttpRequest("POST", "https://dev3-api.mysmartgrid.de:8443/device/ae44fe656e58a43284995e5db583b378", "644bc984759564991ccabe7f9fcb801a", boost::shared_ptr<Json::Value>(value));
+		std::string url = libmsg::Webclient::composeDeviceUrl("https://dev3-api.mysmartgrid.de:8443/", "ae44fe656e58a43284995e5db583b378");
+		libmsg::JsonPtr v = libmsg::Webclient::performHttpPost(url, "644bc984759564991ccabe7f9fcb801a", libmsg::JsonPtr(value));
 		std::cout << "Result: " << *v << std::endl;
 	} catch ( const libmsg::GenericException& e ) {
 		std::cout << "Error during request: " << e.what();

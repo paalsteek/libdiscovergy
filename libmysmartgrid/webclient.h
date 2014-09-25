@@ -29,6 +29,7 @@ namespace libmsg {
 	typedef boost::shared_ptr<Json::Value> JsonPtr;
 	class Webclient {
 		public:
+			typedef std::map<std::string, std::string> ParamList;
 			Webclient();
 			~Webclient();
 
@@ -38,6 +39,10 @@ namespace libmsg {
 			static JsonPtr performHttpGet(const std::string& url, const std::string& key);
 			static JsonPtr performHttpPost(const std::string& url, const std::string& key, const JsonPtr& body);
 			static JsonPtr performHttpDelete(const std::string& url, const std::string& key);
+
+			static const std::string composeDeviceUrl(const std::string& url, const std::string& deviceId);
+			static const std::string composeSensorUrl(const std::string& url, const std::string& sensorId, const ParamList& params = ParamList());
+			static const std::string composeUrl(const std::string& url, const std::string& object, const std::string& id, const std::string& query = "");
 
 		protected:
 			static JsonPtr performHttpRequest(const std::string& method, const std::string& url, const std::string& token, const std::string& key, const JsonPtr& body);
