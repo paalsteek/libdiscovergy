@@ -66,6 +66,64 @@ size_t Webclient::curlWriteCustomCallback(char *ptr, size_t size, size_t nmemb, 
 	return realsize;
 }
 
+Webclient::ReadingList Webclient::getReadings(const std::string& url, const std::string& id, const std::string& token, const std::string& unit) {
+	libmsg::Webclient::ParamList p;
+	p["interval"] = "hour";
+	p["unit"] = unit;
+	std::string sensorUrl = libmsg::Webclient::composeSensorUrl(url, id, p);
+	libmsg::JsonPtr result = libmsg::Webclient::performHttpGetToken(sensorUrl , token);
+
+	ReadingList readings;
+	for (auto it = result->begin(), end = result->end(); it != end; ++it) {
+		Json::Value timestamp = (*it)[0];
+		Json::Value value = (*it)[1];
+		if (value.isConvertibleTo(Json::realValue)) {
+			readings.push_back(std::make_pair(timestamp.asInt(), value.asDouble()));
+		}
+	}
+
+	return readings;
+}
+
+Webclient::ReadingList Webclient::getReadingsKey(const std::string& url, const std::string& id, const std::string& key, const std::string& unit) {
+	libmsg::Webclient::ParamList p;
+	p["interval"] = "hour";
+	p["unit"] = unit;
+	std::string sensorUrl = libmsg::Webclient::composeSensorUrl(url, id, p);
+	libmsg::JsonPtr result = libmsg::Webclient::performHttpGet(sensorUrl , key);
+
+	ReadingList readings;
+	for (auto it = result->begin(), end = result->end(); it != end; ++it) {
+		Json::Value timestamp = (*it)[0];
+		Json::Value value = (*it)[1];
+		if (value.isConvertibleTo(Json::realValue)) {
+			readings.push_back(std::make_pair(timestamp.asInt(), value.asDouble()));
+		}
+	}
+
+	return readings;
+}
+
+Webclient::Reading Webclient::getLastReading(const std::string& url, const std::string& id, const std::string& token, const std::string& unit) {
+	ReadingList list = getReadings(url, id, token, unit);
+	Reading result = std::make_pair(0, 0);
+	for (auto it = list.begin(), end = list.end(); it != end; ++it) {
+		if (it->first > result.first)
+			result = *it;
+	}
+	return result;
+}
+
+Webclient::Reading Webclient::getLastReadingKey(const std::string& url, const std::string& id, const std::string& key, const std::string& unit) {
+	ReadingList list = getReadingsKey(url, id, key, unit);
+	Reading result = std::make_pair(0, 0);
+	for (auto it = list.begin(), end = list.end(); it != end; ++it) {
+		if (it->first > result.first)
+			result = *it;
+	}
+	return result;
+}
+
 boost::shared_ptr<Json::Value> Webclient::performHttpRequest(const std::string& method, const std::string& url, const std::string& token)
 {
 	return performHttpRequest(method, url, token, "", boost::shared_ptr<Json::Value>(new Json::Value()));

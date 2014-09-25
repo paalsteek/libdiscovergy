@@ -30,8 +30,15 @@ namespace libmsg {
 	class Webclient {
 		public:
 			typedef std::map<std::string, std::string> ParamList;
+			typedef std::pair<int, double> Reading;
+			typedef std::vector<std::pair<int, double> > ReadingList;
 			Webclient();
 			~Webclient();
+
+			static ReadingList getReadings(const std::string& url, const std::string& id, const std::string& token, const std::string& unit = "watt");
+			static ReadingList getReadingsKey(const std::string& url, const std::string& id, const std::string& key, const std::string& unit = "watt");
+			static Reading getLastReading(const std::string& url, const std::string& id, const std::string& token, const std::string& unit = "watt");
+			static Reading getLastReadingKey(const std::string& url, const std::string& id, const std::string& key, const std::string& unit = "watt");
 
 			static JsonPtr performHttpRequest(const std::string& method, const std::string& url, const std::string& token);
 			static JsonPtr performHttpRequest(const std::string& method, const std::string& url, const std::string& key, const boost::shared_ptr<Json::Value>& body);
