@@ -26,6 +26,26 @@
 #include <jsoncpp/json/json.h>
 
 namespace libmsg {
+	enum class SecretType {
+		Token,
+		Key
+	};
+	struct Secret {
+		SecretType type;
+		std::string secret;
+	};
+	Secret secretFromKey(const std::string& key) {
+		Secret s;
+		s.type = SecretType::Key;
+		s.secret = key;
+		return s;
+	};
+	Secret secretFromToken(const std::string& token) {
+		Secret s;
+		s.type = SecretType::Token;
+		s.secret = token;
+		return s;
+	};
 	typedef boost::shared_ptr<Json::Value> JsonPtr;
 	class Webclient {
 		public:
@@ -35,24 +55,20 @@ namespace libmsg {
 			Webclient();
 			~Webclient();
 
-			static ReadingList getReadings(const std::string& url, const std::string& id, const std::string& token, const std::string& unit = "watt");
-			static ReadingList getReadingsKey(const std::string& url, const std::string& id, const std::string& key, const std::string& unit = "watt");
-			static Reading getLastReading(const std::string& url, const std::string& id, const std::string& token, const std::string& unit = "watt");
-			static Reading getLastReadingKey(const std::string& url, const std::string& id, const std::string& key, const std::string& unit = "watt");
+			static ReadingList getReadings(const std::string& url, const std::string& id, const Secret& secret, const std::string& unit = "watt");
+			static Reading getLastReading(const std::string& url, const std::string& id, const Secret& secret, const std::string& unit = "watt");
 
-			static JsonPtr performHttpRequest(const std::string& method, const std::string& url, const std::string& token);
-			static JsonPtr performHttpRequest(const std::string& method, const std::string& url, const std::string& key, const boost::shared_ptr<Json::Value>& body);
-			static JsonPtr performHttpGetToken(const std::string& url, const std::string& token);
-			static JsonPtr performHttpGet(const std::string& url, const std::string& key);
-			static JsonPtr performHttpPost(const std::string& url, const std::string& key, const JsonPtr& body);
-			static JsonPtr performHttpDelete(const std::string& url, const std::string& key);
+			static JsonPtr performHttpRequest(const std::string& method, const std::string& url, const Secret& secret, const JsonPtr& body = JsonPtr(new Json::Value()));
+			static JsonPtr performHttpGet(const std::string& url, const Secret& secret);
+			static JsonPtr performHttpPost(const std::string& url, const Secret& secret, const JsonPtr& body);
+			static JsonPtr performHttpDelete(const std::string& url, const Secret& secret);
 
 			static const std::string composeDeviceUrl(const std::string& url, const std::string& deviceId);
 			static const std::string composeSensorUrl(const std::string& url, const std::string& sensorId, const ParamList& params = ParamList());
 			static const std::string composeUrl(const std::string& url, const std::string& object, const std::string& id, const std::string& query = "");
 
 		protected:
-			static JsonPtr performHttpRequest(const std::string& method, const std::string& url, const std::string& token, const std::string& key, const JsonPtr& body);
+			//static JsonPtr performHttpRequest(const std::string& method, const std::string& url, const std::string& token, const std::string& key, const JsonPtr& body);
 
 			static const std::string digest_message(const std::string& data, const std::string& key);
 			static size_t curlWriteCustomCallback(char *ptr, size_t size, size_t nmemb, void *data);

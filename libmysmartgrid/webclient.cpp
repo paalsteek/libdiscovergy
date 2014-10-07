@@ -66,12 +66,12 @@ size_t Webclient::curlWriteCustomCallback(char *ptr, size_t size, size_t nmemb, 
 	return realsize;
 }
 
-Webclient::ReadingList Webclient::getReadings(const std::string& url, const std::string& id, const std::string& token, const std::string& unit) {
+Webclient::ReadingList Webclient::getReadings(const std::string& url, const std::string& id, const Secret& secret, const std::string& unit) {
 	libmsg::Webclient::ParamList p;
 	p["interval"] = "hour";
 	p["unit"] = unit;
 	std::string sensorUrl = libmsg::Webclient::composeSensorUrl(url, id, p);
-	libmsg::JsonPtr result = libmsg::Webclient::performHttpGetToken(sensorUrl , token);
+	libmsg::JsonPtr result = libmsg::Webclient::performHttpGet(sensorUrl , secret);
 
 	ReadingList readings;
 	for (auto it = result->begin(), end = result->end(); it != end; ++it) {
@@ -85,56 +85,17 @@ Webclient::ReadingList Webclient::getReadings(const std::string& url, const std:
 	return readings;
 }
 
-Webclient::ReadingList Webclient::getReadingsKey(const std::string& url, const std::string& id, const std::string& key, const std::string& unit) {
-	libmsg::Webclient::ParamList p;
-	p["interval"] = "hour";
-	p["unit"] = unit;
-	std::string sensorUrl = libmsg::Webclient::composeSensorUrl(url, id, p);
-	libmsg::JsonPtr result = libmsg::Webclient::performHttpGet(sensorUrl , key);
-
-	ReadingList readings;
-	for (auto it = result->begin(), end = result->end(); it != end; ++it) {
-		Json::Value timestamp = (*it)[0];
-		Json::Value value = (*it)[1];
-		if (value.isConvertibleTo(Json::realValue)) {
-			readings.push_back(std::make_pair(timestamp.asInt(), value.asDouble()));
-		}
-	}
-
-	return readings;
+Webclient::Reading Webclient::getLastReading(const std::string& url, const std::string& id, const Secret& secret, const std::string& unit) {
+	ReadingList list = getReadings(url, id, secret, unit);
+	// TODO: Do we have to ensure here that the list is sorted by ascending timestamp? Or is that guaranteed by the api?
+	auto it = list.rbegin(), end = list.rend();
+	while ( it != end && it->second == 0 )
+		it++;
+	std::cout << "Result: " << it->first << ", " << it->second << std::endl;
+	return *it;
 }
 
-Webclient::Reading Webclient::getLastReading(const std::string& url, const std::string& id, const std::string& token, const std::string& unit) {
-	ReadingList list = getReadings(url, id, token, unit);
-	Reading result = std::make_pair(0, 0);
-	for (auto it = list.begin(), end = list.end(); it != end; ++it) {
-		if (it->first > result.first)
-			result = *it;
-	}
-	return result;
-}
-
-Webclient::Reading Webclient::getLastReadingKey(const std::string& url, const std::string& id, const std::string& key, const std::string& unit) {
-	ReadingList list = getReadingsKey(url, id, key, unit);
-	Reading result = std::make_pair(0, 0);
-	for (auto it = list.begin(), end = list.end(); it != end; ++it) {
-		if (it->first > result.first)
-			result = *it;
-	}
-	return result;
-}
-
-boost::shared_ptr<Json::Value> Webclient::performHttpRequest(const std::string& method, const std::string& url, const std::string& token)
-{
-	return performHttpRequest(method, url, token, "", boost::shared_ptr<Json::Value>(new Json::Value()));
-}
-
-JsonPtr Webclient::performHttpRequest(const std::string& method, const std::string& url, const std::string& key, const JsonPtr& body)
-{
-	return performHttpRequest(method, url, "", key, body);
-}
-
-JsonPtr Webclient::performHttpRequest(const std::string& method, const std::string& url, const std::string& token, const std::string& key, const JsonPtr& body)
+JsonPtr Webclient::performHttpRequest(const std::string& method, const std::string& url, const Secret& secret, const JsonPtr& body)
 {
 	long int httpCode = 0;
 	CURLcode curlCode;
@@ -177,11 +138,11 @@ JsonPtr Webclient::performHttpRequest(const std::string& method, const std::stri
 			strbody = w.write(*body);
 		}
 		std::ostringstream oss;
-		if (!key.empty()) {
-			oss << "X-Digest: " << digest_message(strbody, key);
+		if (secret.type == SecretType::Key) {
+			oss << "X-Digest: " << digest_message(strbody, secret.secret);
+		} else if (secret.type == SecretType::Token) {
+			oss << "X-Token: " << secret.secret;
 		}
-		if (!token.empty())
-			oss << "X-Token: " << token;
 		headers = curl_slist_append(headers, oss.str().c_str());
 
 		if (method == "POST") {
@@ -249,24 +210,19 @@ JsonPtr Webclient::performHttpRequest(const std::string& method, const std::stri
 	throw GenericException("This point should never be reached.");
 }
 
-JsonPtr Webclient::performHttpGetToken(const std::string& url, const std::string& token)
+JsonPtr Webclient::performHttpGet(const std::string& url, const Secret& secret)
 {
-	return performHttpRequest("GET", url, token);
+	return performHttpRequest("GET", url, secret);
 }
 
-JsonPtr Webclient::performHttpGet(const std::string& url, const std::string& key)
+JsonPtr Webclient::performHttpPost(const std::string& url, const Secret& secret, const JsonPtr& body)
 {
-	return performHttpRequest("GET", url, key, JsonPtr(new Json::Value()));
+	return performHttpRequest("POST", url, secret, body);
 }
 
-JsonPtr Webclient::performHttpPost(const std::string& url, const std::string& key, const JsonPtr& body)
+JsonPtr Webclient::performHttpDelete(const std::string& url, const Secret& secret)
 {
-	return performHttpRequest("POST", url, key, body);
-}
-
-JsonPtr Webclient::performHttpDelete(const std::string& url, const std::string& key)
-{
-	return performHttpRequest("DELETE", url, key, JsonPtr(new Json::Value()));
+	return performHttpRequest("DELETE", url, secret);
 }
 
 const std::string Webclient::composeDeviceUrl(const std::string& url, const std::string& id)
