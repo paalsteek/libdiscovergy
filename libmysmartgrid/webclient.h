@@ -26,26 +26,29 @@
 #include <jsoncpp/json/json.h>
 
 namespace libmsg {
-	enum class SecretType {
-		Token,
-		Key
+	class Secret {
+		public:
+			enum class SecretType {
+				Token,
+				Key
+			};
+			static Secret fromKey(const std::string& key);
+			static Secret fromToken(const std::string& token);
+			bool isKey() const {
+				return _type == SecretType::Key;
+			}
+			bool isToken() const {
+				return _type == SecretType::Token;
+			}
+			std::string key() const;
+			std::string token() const;
+
+		private:
+			Secret() {};
+			SecretType _type;
+			std::string _secret;
 	};
-	struct Secret {
-		SecretType type;
-		std::string secret;
-	};
-	Secret secretFromKey(const std::string& key) {
-		Secret s;
-		s.type = SecretType::Key;
-		s.secret = key;
-		return s;
-	};
-	Secret secretFromToken(const std::string& token) {
-		Secret s;
-		s.type = SecretType::Token;
-		s.secret = token;
-		return s;
-	};
+
 	typedef boost::shared_ptr<Json::Value> JsonPtr;
 	class Webclient {
 		public:

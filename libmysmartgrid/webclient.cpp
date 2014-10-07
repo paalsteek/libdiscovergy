@@ -31,6 +31,34 @@ using namespace libmsg;
 Webclient::Webclient() {}
 Webclient::~Webclient() {}
 
+Secret Secret::fromKey(const std::string& key) {
+	Secret s;
+	s._type = SecretType::Key;
+	s._secret = key;
+	return s;
+};
+
+Secret Secret::fromToken(const std::string& token) {
+	Secret s;
+	s._type = SecretType::Token;
+	s._secret = token;
+	return s;
+};
+
+std::string Secret::key() const {
+	if (_type == SecretType::Key) {
+		return _secret;
+	}
+	throw GenericException("Key requested from secret that is no key");
+}
+
+std::string Secret::token() const {
+	if (_type == SecretType::Token) {
+		return _secret;
+	}
+	throw GenericException("Token requested from secret that is no token");
+}
+
 const std::string Webclient::digest_message(const std::string& data, const std::string& key)
 {
 	HMAC_CTX context;
@@ -138,10 +166,10 @@ JsonPtr Webclient::performHttpRequest(const std::string& method, const std::stri
 			strbody = w.write(*body);
 		}
 		std::ostringstream oss;
-		if (secret.type == SecretType::Key) {
-			oss << "X-Digest: " << digest_message(strbody, secret.secret);
-		} else if (secret.type == SecretType::Token) {
-			oss << "X-Token: " << secret.secret;
+		if (secret.isKey()) {
+			oss << "X-Digest: " << digest_message(strbody, secret.key());
+		} else if (secret.isToken()) {
+			oss << "X-Token: " << secret.token();
 		}
 		headers = curl_slist_append(headers, oss.str().c_str());
 
