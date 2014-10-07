@@ -119,8 +119,11 @@ Webclient::Reading Webclient::getLastReading(const std::string& url, const std::
 	auto it = list.rbegin(), end = list.rend();
 	while ( it != end && it->second == 0 )
 		it++;
-	std::cout << "Result: " << it->first << ", " << it->second << std::endl;
-	return *it;
+
+	if ( it != end ) {
+		return *it;
+	}
+	return std::make_pair(0, 0.0);
 }
 
 JsonPtr Webclient::performHttpRequest(const std::string& method, const std::string& url, const Secret& secret, const JsonPtr& body)
