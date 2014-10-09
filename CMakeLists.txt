@@ -1,5 +1,5 @@
 # -*- mode: cmake; -*-
-project(libmysmartgrid)
+project(libdiscovergy)
 string(TOUPPER ${PROJECT_NAME} UPPER_PROJECT_NAME)
 cmake_minimum_required(VERSION "2.6" FATAL_ERROR)
 if(POLICY CMP0011)
@@ -109,7 +109,7 @@ endif( NOT JSONCPP_FOUND)
 
 include_directories(${CMAKE_BINARY_DIR})
 
-# this file is installed and contains all necessary information about the installed libmysmartgrid,
+# this file is installed and contains all necessary information about the installed libdiscovergy,
 # it also loads the file with the exported targets
 configure_file(${PROJECT_NAME}Config.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" @ONLY)
 # Check for some compiler stuff
@@ -117,11 +117,11 @@ include(CMakeBackwardCompatibilityCXX)
 
 # Reflect the package structure
 add_subdirectory(src)
-add_subdirectory(libmysmartgrid)
+add_subdirectory(libdiscovergy)
 
 # add some files to the installation target
 INSTALL(FILES README.md LICENSE 
-    DESTINATION share/doc/libmysmartgrid
+    DESTINATION share/doc/libdiscovergy
   )
 
 install(EXPORT ${PROJECT_NAME}Exports
@@ -135,11 +135,11 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
 # CPACK packaging
 INCLUDE(InstallRequiredSystemLibraries)
 SET(CPACK_GENERATOR "DEB" "STGZ" "TGZ" "TBZ2")
-SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "mysmartgrid library")
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "discovergy library")
 SET(CPACK_PACKAGE_VENDOR "Fraunhofer ITWM")
 set(CPACK_PACKAGE_CONTACT "Fraunhofer ITWM <support@mysmartgrid.de>")
 SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
-set(CPACK_PACKAGE_NAME "libmysmartgrid")
+set(CPACK_PACKAGE_NAME "libdiscovergy")
 SET(CPACK_PACKAGE_VERSION_MAJOR ${V_MAJOR})
 SET(CPACK_PACKAGE_VERSION_MINOR ${V_MINOR})
 SET(CPACK_PACKAGE_VERSION_PATCH ${V_PATCH})

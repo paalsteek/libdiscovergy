@@ -1,5 +1,5 @@
 /**
- * This file is part of libmysmartgrid.
+ * This file is part of libdiscovergy.
  *
  * (c) Fraunhofer ITWM - Mathias Dalheimer <dalheimer@itwm.fhg.de>,    2010
  *                       Ely de Oliveira   <ely.oliveira@itwm.fhg.de>, 2013
@@ -19,15 +19,15 @@
  * along with libklio. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBMSG_ERROR_HPP
-#define LIBMSG_ERROR_HPP 1
+#ifndef LIBDISCOVERGY_ERROR_HPP
+#define LIBDISCOVERGY_ERROR_HPP 1
 
 #include <string>
 #include <boost/shared_ptr.hpp>
 #include <exception>
 
 
-namespace libmsg {
+namespace libdiscovergy {
 	class GenericException : public std::exception {
 		public:
 			typedef boost::shared_ptr<GenericException> Ptr;
@@ -100,4 +100,4 @@ namespace libmsg {
 
 }
 
-#endif /* LIBMSG_ERROR_HPP */
+#endif /* LIBDISCOVERGY_ERROR_HPP */

@@ -1,14 +1,13 @@
-## libmysmartgrid - a C++ library for interfacing with the mySmartGrid API
+## libdiscovergy - a C++ library for interfacing with the discovergy API
 
-  https://github.com/mysmartgrid/libmysmartgrid
+  https://github.com/mysmartgrid/libdiscovergy
 
-This library is a C++ implementation of the mySmartGrid API as documented at
-  http://developer.mysmartgrid.de/doku.php?id=webserviceinterface21
+This library is a C++ implementation of the discovergy API. It is a fork of the libmysmartgrid (https://github.com/mysmartgrid/libmysmartgrid)
 It is based on libcurl (http://curl.haxx.se/) and libjsoncpp (https://github.com/open-source-parsers/jsoncpp)
 
-## Building libmysmartgrid
+## Building libdiscovergy
 
-Libmysmartgrid depends on the following libraries:
+Libdiscovergy depends on the following libraries:
 
 1. Boost version 1.46 or later
 2. libcurl version 7.19 or later
@@ -26,7 +25,7 @@ To build the code run the following lines from the source directory
     cmake ../
     make
 
-To install the libmysmartgrid to /usr/local run
+To install the libdiscovergy to /usr/local run
 
     make install
 

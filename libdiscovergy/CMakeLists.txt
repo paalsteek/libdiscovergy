@@ -1,7 +1,7 @@
 # -*- mode: cmake; -*-
 
-file(GLOB msg_hdrs *.h *.hpp)
-install(FILES ${msg_hdrs} DESTINATION include/libmysmartgrid)
+file(GLOB discovergy_hdrs *.h *.hpp)
+install(FILES ${discovergy_hdrs} DESTINATION include/libdiscovergy)
 
 include_directories(${CMAKE_SOURCE_DIR}
                     ${CURL_INCLUDE_DIR}
@@ -10,18 +10,18 @@ include_directories(${CMAKE_SOURCE_DIR}
 )
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 
-file(GLOB msg_src *.cpp *.hpp)
+file(GLOB discovergy_src *.cpp *.hpp)
 
-ADD_LIBRARY(mysmartgrid SHARED ${msg_src}
+ADD_LIBRARY(discovergy SHARED ${discovergy_src}
   )
 
-target_link_libraries(mysmartgrid
+target_link_libraries(discovergy
   ${Boost_LIBRARIES}
   ${CURL_LIBRARIES}
   ${JSONCPP_LIBRARY}
   ${OPENSSL_CRYPTO_LIBRARY}
 )
 
-install(TARGETS mysmartgrid 
+install(TARGETS discovergy 
   EXPORT ${PROJECT_NAME}Exports
   LIBRARY DESTINATION lib)
